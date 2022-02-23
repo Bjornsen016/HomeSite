@@ -4,7 +4,7 @@ import {
 	getTodos,
 	removeTodo,
 	printTodos,
-} from "./todoHelp.js";
+} from "./TodoHelp.js";
 
 init();
 
