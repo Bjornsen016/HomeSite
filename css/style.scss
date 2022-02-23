@@ -26,3 +26,15 @@ header {
 .container {
 	padding: 0;
 }
+
+#accordian-handla-body {
+	ul {
+		width: 80%;
+		padding: 0.5rem;
+		li {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+	}
+}
