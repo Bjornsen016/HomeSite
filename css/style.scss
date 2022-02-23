@@ -13,6 +13,10 @@ header {
 	flex-wrap: wrap;
 	padding: 0.3rem;
 }
+.accordian-handla-body {
+	flex-direction: column;
+	align-content: center;
+}
 
 .card {
 	align-items: center;
@@ -35,6 +39,9 @@ header {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
+			button {
+				box-shadow: -1px -1px 6px 0px rgba(94, 78, 78, 0.72);
+			}
 		}
 	}
 }

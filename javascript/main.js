@@ -45,7 +45,7 @@ accordian.innerHTML = /*html*/ `
     </h2>
     <div id="collapse-handla" class="accordion-collapse collapse" aria-labelledby="heading-handla"
         data-bs-parent="#accordion">
-        <div class="accordion-body" id="accordian-handla-body">
+        <div class="accordion-body accordian-handla-body" id="accordian-handla-body">
 
         </div>
     </div>
@@ -188,28 +188,89 @@ async function getTodos(token) {
 	return data;
 }
 
-function printTodos(todoList) {
+function printTodos(todoList, token) {
 	const todoHtmlEl = document.getElementById("accordian-handla-body");
+	const addNewTodoBtn = document.createElement("button");
+	addNewTodoBtn.classList.add("btn", "btn-outline-primary");
+	addNewTodoBtn.style.width = "150px";
+	addNewTodoBtn.style.alignSelf = "center";
+	addNewTodoBtn.style.margin = "8px";
+	addNewTodoBtn.innerText = "Skapa ny todo";
+	todoHtmlEl.appendChild(addNewTodoBtn);
 	const todoUl = document.createElement("ul");
 	todoUl.classList.add("list-group");
 
 	todoList.forEach((todo) => {
 		const liEl = document.createElement("li");
-		liEl.id = todo._id;
+		liEl.id = "todo: " + todo._id;
 		liEl.classList.add("list-group-item");
 
 		let desc = document.createElement("div");
 		desc.innerText = `${todo.description}`;
 		liEl.appendChild(desc);
 
-		let compl = document.createElement("div");
-		compl.innerText = `${todo.completed}`;
+		let compl = document.createElement("button");
+		compl.classList.add("btn");
+		compl.id = todo._id;
+		compl.classList.add(todo.completed);
+		if (todo.completed) {
+			compl.innerText = `Gjord: Ja`;
+			compl.classList.add("btn-success");
+		} else {
+			compl.innerText = `Gjord: Nej`;
+			compl.classList.add("btn-danger");
+		}
+		compl.addEventListener("click", (event) => {
+			console.log(event.target);
+			let boolean;
+			const elementClasses = event.target.classList;
+			if (elementClasses.contains("false")) boolean = false;
+			else boolean = true;
+			toggleCompleteTodo(event.target.id, event.target, boolean, token);
+		});
 		liEl.appendChild(compl);
 
-		/* liEl.append(`<p>${todo.description}</p>`, `<p>${todo.completed}</p>`); */
 		todoUl.appendChild(liEl);
 	});
 	todoHtmlEl.appendChild(todoUl);
+}
+
+function toggleCompleteTodo(id, elem, compl, token) {
+	var myHeaders = new Headers();
+	myHeaders.append("Authorization", `Bearer ${token}`);
+	myHeaders.append("Content-Type", "application/json");
+
+	compl = !compl;
+
+	var raw = JSON.stringify({
+		completed: compl,
+	});
+
+	var requestOptions = {
+		method: "PUT",
+		headers: myHeaders,
+		body: raw,
+		redirect: "follow",
+	};
+
+	fetch(`https://api-nodejs-todolist.herokuapp.com/task/${id}`, requestOptions)
+		.then((response) => response.json())
+		.then((result) => {
+			const list = elem.classList;
+
+			if (list.contains("false")) {
+				elem.classList.replace("false", "true");
+				elem.classList.replace("btn-danger", "btn-success");
+				elem.innerText = "Gjord: Ja";
+			} else if (list.contains("true")) {
+				elem.classList.replace("true", "false");
+				elem.classList.replace("btn-success", "btn-danger");
+				elem.innerText = "Gjord: Nej";
+			}
+
+			console.log(result);
+		})
+		.catch((error) => console.log("error", error));
 }
 
 const token = await getToken();
@@ -223,4 +284,4 @@ const todoToken = await logInToTodoApp();
 
 const todos = await getTodos(todoToken);
 
-printTodos(todos.data);
+printTodos(todos.data, todoToken);
