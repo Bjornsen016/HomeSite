@@ -162,7 +162,7 @@ async function addTodo(token, whatToDo) {
 		redirect: "follow",
 	};
 
-	fetch("https://api-nodejs-todolist.herokuapp.com/task", requestOptions)
+	return fetch("https://api-nodejs-todolist.herokuapp.com/task", requestOptions)
 		.then((response) => response.json())
 		.then((result) => console.log(result))
 		.catch((error) => console.log("error", error));
@@ -190,12 +190,23 @@ async function getTodos(token) {
 
 function printTodos(todoList, token) {
 	const todoHtmlEl = document.getElementById("accordian-handla-body");
+
+	todoHtmlEl.innerText = "";
 	const addNewTodoBtn = document.createElement("button");
+
 	addNewTodoBtn.classList.add("btn", "btn-outline-primary");
 	addNewTodoBtn.style.width = "150px";
 	addNewTodoBtn.style.alignSelf = "center";
 	addNewTodoBtn.style.margin = "8px";
 	addNewTodoBtn.innerText = "Skapa ny todo";
+
+	addNewTodoBtn.addEventListener("click", async () => {
+		const what = prompt("Vad vill du göra?");
+		await addTodo(token, what);
+		const list = await getTodos(token);
+		printTodos(list.data, token);
+	});
+
 	todoHtmlEl.appendChild(addNewTodoBtn);
 	const todoUl = document.createElement("ul");
 	todoUl.classList.add("list-group");
@@ -273,6 +284,26 @@ function toggleCompleteTodo(id, elem, compl, token) {
 		.catch((error) => console.log("error", error));
 }
 
+async function removeTodo(token, id) {
+	var myHeaders = new Headers();
+	myHeaders.append("Authorization", `Bearer ${token}`);
+	myHeaders.append("Content-Type", "application/json");
+
+	var requestOptions = {
+		method: "DELETE",
+		headers: myHeaders,
+		redirect: "follow",
+	};
+
+	return fetch(
+		`https://api-nodejs-todolist.herokuapp.com/task/${id}`,
+		requestOptions
+	)
+		.then((response) => response.json())
+		.then((result) => console.log(result))
+		.catch((error) => console.log("error", error));
+}
+
 const token = await getToken();
 
 console.log(token);
@@ -285,3 +316,5 @@ const todoToken = await logInToTodoApp();
 const todos = await getTodos(todoToken);
 
 printTodos(todos.data, todoToken);
+
+/* removeTodo(todoToken, "62168b77990fef0017469409"); */
