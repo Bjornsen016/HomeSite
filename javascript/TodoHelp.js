@@ -56,11 +56,170 @@ export async function removeTodo(token, id) {
 		.catch((error) => console.log("error", error));
 }
 
-export function printTodos(todoList, token) {
-	const todoHtmlEl = document.getElementById("accordian-handla-body");
+function createListTabButton(header) {
+	const button = document.createElement("button");
+	button.classList.add("nav-link", "active");
+	button.dataset.bsToggle = "tab";
+	button.dataset.bsTarget = `#list-${header}`;
+	button.setAttribute("type", "button");
+	button.setAttribute("role", "tab");
+	button.setAttribute("id", `tab-list-${header}`);
+	button.ariaControls = `list-${header}`;
+	button.ariaSelected = "false";
+	button.innerText = header;
 
-	todoHtmlEl.innerText = "";
+	return button;
+}
+
+function createListContent(todoList, header, token) {
+	const container = document.createElement("div");
+	container.classList.add("tab-pane", "fade", "show", "active");
+	container.setAttribute("id", `list-${header}`);
+	container.setAttribute("role", `tabpanel`);
+	container.ariaLabelledby = `tab-list-${header}`;
+
+	const card = document.createElement("article");
+	card.classList.add("card");
+
+	const cardHeader = document.createElement("h5");
+	cardHeader.classList.add("card-header", "justify-content-between");
+	cardHeader.style.display = "flex";
+	cardHeader.innerHTML = header;
+	card.appendChild(cardHeader);
+
+	const table = createTable(todoList, token, header);
+	const addBtn = addNewTodoButton(token, header);
+
+	card.appendChild(table);
+	container.appendChild(card);
+	container.appendChild(addBtn);
+
+	return container;
+}
+
+function createTable(list, token, header) {
+	const table = document.createElement("table");
+	table.classList.add(
+		"table",
+		"table-dark",
+		"table-striped",
+		"table-borderless"
+	);
+	const thead = document.createElement("thead");
+	const trhead = document.createElement("tr");
+
+	const headingArr = ["Att göra", "Gjort", "Radera"];
+	headingArr.forEach((str) => {
+		const th = document.createElement("th");
+		th.setAttribute("scope", "col");
+		th.innerText = str;
+		trhead.appendChild(th);
+	});
+
+	thead.appendChild(trhead);
+	table.appendChild(thead);
+
+	const tableBody = document.createElement("tbody");
+
+	list.forEach((todo) => {
+		const tableRow = document.createElement("tr");
+
+		const contentArr = [todo.description, todo.completed, "Radera"];
+
+		contentArr.forEach((str, index) => {
+			const td = document.createElement("td");
+			td.style.fontSize = "1.2rem";
+			if (index === 1) {
+				const div = document.createElement("div");
+				div.classList.add("form-check", "form-switch");
+				const input = document.createElement("input");
+				input.classList.add("form-check-input", str);
+				input.setAttribute("type", "checkbox");
+				input.id = todo._id;
+				input.checked = str;
+				input.addEventListener("click", (event) => {
+					console.log(event.target);
+					let boolean;
+					const elementClasses = event.target.classList;
+					if (elementClasses.contains("false")) boolean = false;
+					else boolean = true;
+					toggleCompleteTodo(event.target.id, event.target, boolean, token);
+				});
+				div.appendChild(input);
+				td.appendChild(div);
+			} else if (index === 2) {
+				const button = document.createElement("button");
+				button.classList.add("btn", "btn-danger");
+				button.style.borderRadius = "50%";
+				button.id = todo._id;
+				button.innerText = "X";
+
+				button.addEventListener("click", async (event) => {
+					const confirmRemove = confirm(
+						`Är du säker på att du vill ta bort: "${todo.description}"`
+					);
+					if (!confirmRemove) return;
+
+					await removeTodo(token, event.target.id);
+					const newList = await getTodos(token);
+					const tabListH = document.getElementById(`tab-list-${header}`);
+					tabListH.remove();
+					const tabListC = document.getElementById(`list-${header}`);
+					tabListC.remove();
+					printTodos(newList.data, token, header);
+				});
+
+				td.appendChild(button);
+			} else {
+				td.setAttribute("scope", "row");
+				td.innerText = str;
+			}
+
+			tableRow.appendChild(td);
+		});
+
+		tableBody.appendChild(tableRow);
+		table.appendChild(tableBody);
+	});
+	return table;
+}
+
+function addNewTodoButton(token, header) {
 	const addNewTodoBtn = document.createElement("button");
+
+	addNewTodoBtn.classList.add("btn", "btn-outline-primary");
+	addNewTodoBtn.style.width = "150px";
+	addNewTodoBtn.style.alignSelf = "center";
+	addNewTodoBtn.style.margin = "8px";
+	addNewTodoBtn.innerText = "Skapa ny todo";
+
+	addNewTodoBtn.addEventListener("click", async () => {
+		const what = prompt("Vad vill du göra?");
+		await addTodo(token, what);
+		const list = await getTodos(token);
+		const tabListH = document.getElementById(`tab-list-${header}`);
+		tabListH.remove();
+		const tabListC = document.getElementById(`list-${header}`);
+		tabListC.remove();
+		printTodos(list.data, token, header);
+	});
+
+	return addNewTodoBtn;
+}
+
+export function printTodos(todoList, token, header) {
+	const listTab = document.getElementById("nav-tab-lists");
+	const button = createListTabButton(header);
+	listTab.appendChild(button);
+
+	const listTabContent = document.getElementById("nav-tab-content-lists");
+	const content = createListContent(todoList, header, token);
+
+	listTabContent.appendChild(content);
+
+	/* Content */
+
+	/* const addNewTodoBtn = document.createElement("button");
 
 	addNewTodoBtn.classList.add("btn", "btn-outline-primary");
 	addNewTodoBtn.style.width = "150px";
@@ -75,8 +234,8 @@ export function printTodos(todoList, token) {
 		printTodos(list.data, token);
 	});
 
-	todoHtmlEl.appendChild(addNewTodoBtn);
-	const todoUl = document.createElement("ul");
+	todoHtmlEl.appendChild(addNewTodoBtn); */
+	/* const todoUl = document.createElement("ul");
 	todoUl.classList.add("list-group");
 
 	todoList.forEach((todo) => {
@@ -111,7 +270,7 @@ export function printTodos(todoList, token) {
 
 		todoUl.appendChild(liEl);
 	});
-	todoHtmlEl.appendChild(todoUl);
+	todoHtmlEl.appendChild(todoUl); */
 }
 
 export async function getTodos(token) {

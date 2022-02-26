@@ -1,3 +1,4 @@
+import {} from "./utlis.js";
 export async function getToken() {
 	const json = await fetch("https://api.vasttrafik.se/token", {
 		method: "POST",
@@ -15,7 +16,19 @@ export async function getToken() {
  * @param {*} stopId examples - pilgatan: "9022014005279002" || gråbo: "9022014017320004" || Aggetorpsvägen: "9022014017434001"
  * @param {*} stopIdWhereTo examples - pilgatan: "9022014005279002" || gråbo: "9022014017320004" || Aggetorpsvägen: "9022014017434001"
  */
-export async function getDepBoard(token, stopId, stopIdWhereTo) {
+export async function getDepBoard(token, stopId, stopIdWhereTo, header) {
+	const data = await getDepInfo(token, stopId, stopIdWhereTo);
+
+	const navTabBus = document.getElementById("nav-tab-bus");
+	const button = createBusTabButton(header);
+	navTabBus.appendChild(button);
+
+	const navTabBusContent = document.getElementById("nav-tab-content-bus");
+	const content = createDepInfoContent(data, header);
+	navTabBusContent.appendChild(content);
+}
+
+async function getDepInfo(token, stopId, stopIdWhereTo) {
 	("9022014005279002"); /* pilgatan id */
 	("9022014017320004"); /* gråbo id */
 	("9022014017434001"); /* Aggetorpsvägen id */
@@ -40,28 +53,109 @@ export async function getDepBoard(token, stopId, stopIdWhereTo) {
 
 	console.log(data);
 
-	const accordianBus = document.getElementById("accordian-bus-body");
+	return data;
+}
+
+function createBusTabButton(header) {
+	const button = document.createElement("button");
+	button.classList.add("nav-link");
+	button.dataset.bsToggle = "tab";
+	button.dataset.bsTarget = `#bus-${header}`;
+	button.setAttribute("type", "button");
+	button.setAttribute("role", "tab");
+	button.setAttribute("id", `tab-bus-${header}`);
+	button.ariaControls = `bus-${header}`;
+	button.ariaSelected = "false";
+	button.innerText = header;
+
+	return button;
+}
+
+function createDepInfoContent(depInfo, header) {
+	const container = document.createElement("div");
+	container.classList.add("tab-pane", "fade", "hidden");
+	container.setAttribute("id", `bus-${header}`);
+	container.setAttribute("role", `tabpanel`);
+	container.ariaLabelledby = `tab-bus-${header}`;
+
 	const card = document.createElement("article");
 	card.classList.add("card");
-	const cardHeader = document.createElement("h5");
-	cardHeader.classList.add("card-header");
-	cardHeader.innerText = `${data.DepartureBoard.Departure[0].stop} | ${data.DepartureBoard.servertime}`;
-	card.appendChild(cardHeader);
-	const cardBody = document.createElement("ul");
-	cardBody.classList.add("list-group", "list-group-flush");
 
-	data.DepartureBoard.Departure.every((dep, index) => {
+	const cardHeader = document.createElement("h5");
+	cardHeader.classList.add("card-header", "justify-content-between");
+	cardHeader.style.display = "flex";
+	cardHeader.innerHTML = `<div>${depInfo.DepartureBoard.Departure[0].stop}</div><div>${depInfo.DepartureBoard.servertime}</div>`;
+	card.appendChild(cardHeader);
+
+	const table = createTable(depInfo);
+
+	card.appendChild(table);
+	container.appendChild(card);
+
+	return container;
+}
+
+function createTable(depInfo) {
+	const table = document.createElement("table");
+	table.classList.add(
+		"table",
+		"table-dark",
+		"table-striped",
+		"table-borderless"
+	);
+	const thead = document.createElement("thead");
+	const trhead = document.createElement("tr");
+
+	const headingArr = ["Buss", "Riktning", "Avgångstid"];
+	headingArr.forEach((str) => {
+		const th = document.createElement("th");
+		th.setAttribute("scope", "col");
+		th.innerText = str;
+		trhead.appendChild(th);
+	});
+
+	thead.appendChild(trhead);
+	table.appendChild(thead);
+
+	const tableBody = document.createElement("tbody");
+
+	depInfo.DepartureBoard.Departure.every((dep, index) => {
 		if (index > 5) return false;
 
-		const cardRow = document.createElement("li");
-		cardRow.classList.add("list-group-item");
+		const tableRow = document.createElement("tr");
 
-		cardRow.innerText = `${dep.sname} - | ${dep.direction}  | - ${dep.rtTime} `;
+		const contentArr = [dep.sname, dep.direction.trimFromComma(), dep.time];
 
-		cardBody.appendChild(cardRow);
-		card.appendChild(cardBody);
+		contentArr.forEach((str, index) => {
+			const td = document.createElement("td");
+
+			if (index === 0) {
+				td.setAttribute("scope", "row");
+				const span = document.createElement("span");
+				span.style.color = dep.fgColor;
+				span.style.backgroundColor = dep.bgColor;
+				span.style.fontSize = "1.2rem";
+				span.style.paddingLeft = "4px";
+				span.style.paddingRight = "4px";
+				span.style.fontWeight = "bold";
+				span.innerText = str;
+				td.appendChild(span);
+			} else if (index === 2) {
+				td.style.textAlign = "end";
+				td.style.fontSize = "1.2rem";
+				td.innerText = str;
+			} else {
+				td.style.fontSize = "1.2rem";
+				td.innerText = str;
+			}
+
+			tableRow.appendChild(td);
+		});
+
+		tableBody.appendChild(tableRow);
+		table.appendChild(tableBody);
 
 		return true;
 	});
-	accordianBus.appendChild(card);
+	return table;
 }
