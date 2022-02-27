@@ -3,23 +3,40 @@ import { logInToTodoApp, getTodos, printTodos } from "./TodoHelp.js";
 
 init();
 
-const token = await getToken();
-
-console.log(token);
-
-await getDepBoard(token, 9022014017320004, 9022014005279002, "Gråbo");
-/* await getDepBoard(token, "Hitta id för OTP västra", 9022014005279002, "Olofstorp Västra"); */
-getDepBoard(token, 9022014005279002, 9022014017320004, "Pilgatan");
-
-const todoToken = await logInToTodoApp();
-
-const todos = await getTodos(todoToken);
-
-printTodos(todos.data, todoToken, "AttGöra");
-
 /* removeTodo(todoToken, "62168b77990fef0017469409"); */
 
-function init() {
+async function init() {
+	renderMain();
+
+	const token = await getToken();
+
+	console.log(token);
+
+	getDepBoard(token, 9022014017320004, 9022014005279002, "Gråbo");
+	getDepBoard(token, 9022014005147004, 9022014005279002, "Olofstorp-Västra");
+	getDepBoard(token, 9022014005279002, 9022014017320004, "Pilgatan");
+
+	const todoToken = await logInToTodoApp(
+		"kim.bjornsen@hotmail.com",
+		"laika016"
+	);
+	const shoppingToken = await logInToTodoApp(
+		"kim.bjornsen@programmer.net",
+		"laika016"
+	);
+
+	if (typeof todoToken === "string") {
+		const todos = await getTodos(todoToken);
+		printTodos(todos.data, todoToken, "Att-göra");
+	} else alert("Error, kunde inte hämta Att-göra listan. Prova igen.");
+
+	if (typeof shoppingToken === "string") {
+		const shopping = await getTodos(shoppingToken);
+		printTodos(shopping.data, shoppingToken, "Handla");
+	} else alert("Error, kunde inte hämta Handla listan. Prova igen.");
+}
+
+function renderMain() {
 	const main = document.getElementById("main-container");
 	console.log(main);
 
@@ -102,6 +119,42 @@ function init() {
             </div>
 
         </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-hus">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapse-hus" aria-expanded="true" aria-controls="collapse-hus">
+                Huset
+            </button>
+        </h2>
+        <div id="collapse-hus" class="accordion-collapse collapse" aria-labelledby="heading-hus"
+            data-bs-parent="#accordion">
+            <div class="accordion-body" id="accordian-hus-body">
+                   
+            <nav>
+            <div class="nav nav-tabs" id="nav-tab-hus" role="tablist">
+                <button class="nav-link active" id="tab-hus-sopor" data-bs-toggle="tab"
+                    data-bs-target="#hus-sopor" type="button" role="tab" aria-controls="hus-sopor"
+                    aria-selected="true">Sopor</button>
+                <button class="nav-link" id="tab-hus-renovering" data-bs-toggle="tab"
+                    data-bs-target="#hus-renovering" type="button" role="tab" aria-controls="hus-renovering"
+                    aria-selected="true">Renovering</button>
+            </div>
+        </nav>
+        <div class="tab-content" id="nav-tab-content-hus">
+            <div class="tab-pane fade show active" id="hus-sopor" role="tabpanel"
+                aria-labelledby="tab-hus-sopor">
+                SOPOR
+            </div>
+            <div class="tab-pane fade" id="hus-renovering" role="tabpanel"
+                aria-labelledby="tab-hus-renovering">
+                RENOVERING
+            </div>
+        </div>
+
 
             </div>
         </div>

@@ -58,7 +58,7 @@ export async function removeTodo(token, id) {
 
 function createListTabButton(header) {
 	const button = document.createElement("button");
-	button.classList.add("nav-link", "active");
+	button.classList.add("nav-link");
 	button.dataset.bsToggle = "tab";
 	button.dataset.bsTarget = `#list-${header}`;
 	button.setAttribute("type", "button");
@@ -73,7 +73,7 @@ function createListTabButton(header) {
 
 function createListContent(todoList, header, token) {
 	const container = document.createElement("div");
-	container.classList.add("tab-pane", "fade", "show", "active");
+	container.classList.add("tab-pane", "fade", "hidden");
 	container.setAttribute("id", `list-${header}`);
 	container.setAttribute("role", `tabpanel`);
 	container.ariaLabelledby = `tab-list-${header}`;
@@ -111,6 +111,8 @@ function createTable(list, token, header) {
 	const headingArr = ["Att göra", "Radera"];
 	headingArr.forEach((str) => {
 		const th = document.createElement("th");
+		if (str[0]) th.style.width = "85%";
+
 		th.setAttribute("scope", "col");
 		th.innerText = str;
 		trhead.appendChild(th);
@@ -200,7 +202,7 @@ function addNewTodoButton(token, header) {
 	addNewTodoBtn.style.width = "150px";
 	addNewTodoBtn.style.alignSelf = "center";
 	addNewTodoBtn.style.margin = "8px";
-	addNewTodoBtn.innerText = "Skapa ny todo";
+	addNewTodoBtn.innerText = "Lägg till";
 
 	addNewTodoBtn.addEventListener("click", async () => {
 		const what = prompt("Vad vill du göra?");
@@ -222,64 +224,10 @@ export function printTodos(todoList, token, header) {
 	listTab.appendChild(button);
 
 	const listTabContent = document.getElementById("nav-tab-content-lists");
+
 	const content = createListContent(todoList, header, token);
 
 	listTabContent.appendChild(content);
-
-	/* Content */
-
-	/* const addNewTodoBtn = document.createElement("button");
-
-	addNewTodoBtn.classList.add("btn", "btn-outline-primary");
-	addNewTodoBtn.style.width = "150px";
-	addNewTodoBtn.style.alignSelf = "center";
-	addNewTodoBtn.style.margin = "8px";
-	addNewTodoBtn.innerText = "Skapa ny todo";
-
-	addNewTodoBtn.addEventListener("click", async () => {
-		const what = prompt("Vad vill du göra?");
-		await addTodo(token, what);
-		const list = await getTodos(token);
-		printTodos(list.data, token);
-	});
-
-	todoHtmlEl.appendChild(addNewTodoBtn); */
-	/* const todoUl = document.createElement("ul");
-	todoUl.classList.add("list-group");
-
-	todoList.forEach((todo) => {
-		const liEl = document.createElement("li");
-		liEl.id = "todo: " + todo._id;
-		liEl.classList.add("list-group-item");
-
-		let desc = document.createElement("div");
-		desc.innerText = `${todo.description}`;
-		liEl.appendChild(desc);
-
-		let compl = document.createElement("button");
-		compl.classList.add("btn");
-		compl.id = todo._id;
-		compl.classList.add(todo.completed);
-		if (todo.completed) {
-			compl.innerText = `Gjord: Ja`;
-			compl.classList.add("btn-success");
-		} else {
-			compl.innerText = `Gjord: Nej`;
-			compl.classList.add("btn-danger");
-		}
-		compl.addEventListener("click", (event) => {
-			console.log(event.target);
-			let boolean;
-			const elementClasses = event.target.classList;
-			if (elementClasses.contains("false")) boolean = false;
-			else boolean = true;
-			toggleCompleteTodo(event.target.id, event.target, boolean, token);
-		});
-		liEl.appendChild(compl);
-
-		todoUl.appendChild(liEl);
-	});
-	todoHtmlEl.appendChild(todoUl); */
 }
 
 export async function getTodos(token) {
@@ -325,13 +273,13 @@ export async function addTodo(token, whatToDo) {
 		.catch((error) => console.log("error", error));
 }
 
-export async function logInToTodoApp() {
+export async function logInToTodoApp(user, password) {
 	var myHeaders = new Headers();
 	myHeaders.append("Content-Type", "application/json");
 
 	var raw = JSON.stringify({
-		email: "kim.bjornsen@hotmail.com",
-		password: "laika016",
+		email: user,
+		password: password,
 	});
 
 	var requestOptions = {
@@ -349,5 +297,6 @@ export async function logInToTodoApp() {
 		.catch((error) => console.log("error", error));
 
 	console.log(todoToken);
+	console.log(todoToken.token);
 	return todoToken.token;
 }

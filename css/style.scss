@@ -22,15 +22,28 @@ header {
 
 .card {
 	align-items: center;
+	border-radius: 15px 15px 0 0;
+	border: none;
+	box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.2), 0 2px 10px 0 rgba(0, 0, 0, 0.1);
+
 	margin: 0.5rem;
+	min-width: 360px;
+}
+
+.card-header:first-child {
+	border-radius: 15px 15px 0 0;
 }
 
 .card-header {
 	width: 100%;
 }
 
-.container {
+#main-container {
 	padding: 0;
+}
+
+.table {
+	margin-bottom: 0;
 }
 
 #accordian-handla-body {
