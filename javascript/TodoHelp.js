@@ -297,6 +297,5 @@ export async function logInToTodoApp(user, password) {
 		.catch((error) => console.log("error", error));
 
 	console.log(todoToken);
-	console.log(todoToken.token);
 	return todoToken.token;
 }
