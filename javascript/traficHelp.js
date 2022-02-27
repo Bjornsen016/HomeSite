@@ -107,8 +107,9 @@ function createTable(depInfo) {
 	const trhead = document.createElement("tr");
 
 	const headingArr = ["Buss", "Riktning", "Avgångstid"];
-	headingArr.forEach((str) => {
+	headingArr.forEach((str, index) => {
 		const th = document.createElement("th");
+		if (index === 2) th.style.textAlign = "end";
 		th.setAttribute("scope", "col");
 		th.innerText = str;
 		trhead.appendChild(th);
@@ -143,7 +144,19 @@ function createTable(depInfo) {
 			} else if (index === 2) {
 				td.style.textAlign = "end";
 				td.style.fontSize = "1.2rem";
-				td.innerText = str;
+
+				const departureTime = new Date(dep.date + " " + str);
+				const serverTime = new Date(
+					depInfo.DepartureBoard.serverdate +
+						" " +
+						depInfo.DepartureBoard.servertime
+				);
+
+				const minBetweenNowAndDep =
+					Math.abs((serverTime.getTime() - departureTime.getTime()) / 1000) /
+					60;
+
+				td.innerText = str + ` (${minBetweenNowAndDep} min)`;
 			} else {
 				td.style.fontSize = "1.2rem";
 				td.innerText = str;
